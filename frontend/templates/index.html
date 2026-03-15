@@ -2739,13 +2739,24 @@
     .login-box {
       position: relative;
       z-index: 1;
-      width: 420px;
+      width: 860px;
       max-width: 95vw;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 3rem;
     }
 
     .login-brand {
-      text-align: center;
-      margin-bottom: 2rem;
+      text-align: left;
+      flex: 0 0 330px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-self: stretch;
+      padding-left: 2rem;
+      transform: scale(1.4);
+      transform-origin: left center;
     }
 
     .login-brand-icon {
@@ -2756,7 +2767,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto .75rem;
+      margin: 0 0 .75rem;
     }
 
     .login-brand-icon svg {
@@ -2787,6 +2798,8 @@
       border-radius: 18px;
       padding: 2rem;
       box-shadow: 0 24px 64px rgba(0, 0, 0, .5);
+      flex: 1;
+      min-width: 0;
     }
 
     .login-tabs {
