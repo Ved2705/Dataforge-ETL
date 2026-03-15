@@ -98,7 +98,9 @@ def register():
         return jsonify({"error": "username, email and password required"}), 400
     if User.query.filter((User.username == d["username"]) | (User.email == d["email"])).first():
         return jsonify({"error": "Username or email already exists"}), 409
-    u = User(username=d["username"], email=d["email"])
+    u = User(username=d["username"], email=d["email"],
+             full_name=d.get("full_name"), job_title=d.get("job_title"),
+             company=d.get("company"), location=d.get("location"))
     u.set_password(d["password"])
     db.session.add(u); db.session.commit()
     login_user(u)

@@ -3392,8 +3392,18 @@
         <div id="registerForm" style="display:none">
           <div class="lfield"><label>Username</label><input id="rwUsername" type="text" placeholder="your_username"
               autocomplete="username" onkeydown="if(event.key==='Enter')submitRegister()"></div>
+          <div class="lfield"><label>Full Name</label><input id="rwFullName" type="text" placeholder="John Doe"
+              autocomplete="name" onkeydown="if(event.key==='Enter')submitRegister()"></div>
           <div class="lfield"><label>Email</label><input id="rwEmail" type="email" placeholder="you@company.com"
               autocomplete="email" onkeydown="if(event.key==='Enter')submitRegister()"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+            <div class="lfield"><label>Job Title</label><input id="rwJobTitle" type="text" placeholder="Data Engineer"
+                onkeydown="if(event.key==='Enter')submitRegister()"></div>
+            <div class="lfield"><label>Company</label><input id="rwCompany" type="text" placeholder="Acme Corp"
+                onkeydown="if(event.key==='Enter')submitRegister()"></div>
+          </div>
+          <div class="lfield"><label>Location</label><input id="rwLocation" type="text" placeholder="New York, USA"
+              onkeydown="if(event.key==='Enter')submitRegister()"></div>
           <div class="lfield"><label>Password</label><input id="rwPassword" type="password"
               placeholder="Choose a strong password" autocomplete="new-password"
               onkeydown="if(event.key==='Enter')submitRegister()"></div>
@@ -5296,19 +5306,26 @@
     }
     async function submitRegister() {
       const username = document.getElementById('rwUsername').value.trim();
+      const full_name = document.getElementById('rwFullName').value.trim();
       const email = document.getElementById('rwEmail').value.trim();
+      const job_title = document.getElementById('rwJobTitle').value.trim();
+      const company = document.getElementById('rwCompany').value.trim();
+      const location = document.getElementById('rwLocation').value.trim();
       const password = document.getElementById('rwPassword').value;
       const errEl = document.getElementById('registerErr');
-      const btn = document.getElementById('btnRegisterSubmit');
-      if (!username || !email || !password) { errEl.textContent = 'All fields are required'; return; }
-      if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters'; return; }
-      btn.disabled = true; btn.textContent = 'Creating account…'; errEl.textContent = '';
+      errEl.textContent = '';
+      if (!username || !email || !password) { errEl.textContent = 'Username, email and password are required'; return; }
+      document.getElementById('btnRegisterSubmit').disabled = true;
       try {
-        const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, email, password }) });
+        const res = await fetch('/api/auth/register', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password, full_name, job_title, company, location })
+        });
         const data = await res.json();
-        if (!res.ok) { errEl.textContent = data.error || 'Registration failed'; btn.disabled = false; btn.textContent = 'Create Account →'; return; }
+        if (!res.ok) { errEl.textContent = data.error || 'Registration failed'; return; }
         onLoginSuccess(data.user);
-      } catch (e) { errEl.textContent = 'Network error — is the server running?'; btn.disabled = false; btn.textContent = 'Create Account →'; }
+      } catch (e) { errEl.textContent = 'Network error'; }
+      finally { document.getElementById('btnRegisterSubmit').disabled = false; }
     }
 
     async function submitForgot() {
