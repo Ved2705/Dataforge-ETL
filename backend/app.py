@@ -117,6 +117,22 @@ def login():
     _record_login(u)
     return jsonify({"success": True, "user": u.to_dict()})
 
+@app.route("/api/auth/reset-password", methods=["POST"])
+def reset_password():
+    d = request.json or {}
+    email    = d.get("email", "").strip().lower()
+    password = d.get("password", "")
+    if not email or not password:
+        return jsonify({"error": "Email and new password are required"}), 400
+    if len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters"}), 400
+    u = User.query.filter_by(email=email).first()
+    if not u:
+        return jsonify({"error": "No account found with that email"}), 404
+    u.set_password(password)
+    db.session.commit()
+    return jsonify({"success": True})
+
 @app.route("/api/auth/logout", methods=["POST"])
 @login_required
 def logout():

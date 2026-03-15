@@ -3383,6 +3383,10 @@
               autocomplete="current-password" onkeydown="if(event.key==='Enter')submitLogin()"></div>
           <div class="login-err" id="loginErr"></div>
           <button class="btn-login-submit" id="btnLoginSubmit" onclick="submitLogin()">Sign In →</button>
+          <div style="text-align:center;margin-top:.6rem">
+            <span style="font-size:.72rem;color:var(--text3);cursor:pointer;text-decoration:underline"
+              onclick="switchLoginTab('forgot')">Forgot password?</span>
+          </div>
         </div>
         <!-- Register form -->
         <div id="registerForm" style="display:none">
@@ -3395,6 +3399,23 @@
               onkeydown="if(event.key==='Enter')submitRegister()"></div>
           <div class="login-err" id="registerErr"></div>
           <button class="btn-login-submit" id="btnRegisterSubmit" onclick="submitRegister()">Create Account →</button>
+        </div>
+        <!-- Forgot password form -->
+        <div id="forgotForm" style="display:none">
+          <div class="lfield"><label>Email Address</label><input id="fpEmail" type="email" placeholder="you@company.com"
+              onkeydown="if(event.key==='Enter')submitForgot()"></div>
+          <div class="lfield"><label>New Password</label><input id="fpPassword" type="password"
+              placeholder="Enter new password" onkeydown="if(event.key==='Enter')submitForgot()"></div>
+          <div class="lfield"><label>Confirm Password</label><input id="fpConfirm" type="password"
+              placeholder="Confirm new password" onkeydown="if(event.key==='Enter')submitForgot()"></div>
+          <div class="login-err" id="forgotErr"></div>
+          <div class="login-ok" id="forgotOk"
+            style="display:none;color:var(--green);font-size:.75rem;margin-bottom:.5rem;text-align:center"></div>
+          <button class="btn-login-submit" id="btnForgotSubmit" onclick="submitForgot()">Reset Password →</button>
+          <div style="text-align:center;margin-top:.6rem">
+            <span style="font-size:.72rem;color:var(--text3);cursor:pointer;text-decoration:underline"
+              onclick="switchLoginTab('login')">← Back to Sign In</span>
+          </div>
         </div>
         <div class="login-footer">Great Expectations · dbt · AI Analysis</div>
       </div>
@@ -5250,12 +5271,14 @@
       document.getElementById('loginWall').classList.add('hidden');
     }
     function switchLoginTab(mode) {
-      document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
-      document.getElementById('tabRegister').classList.toggle('active', mode === 'register');
       document.getElementById('loginForm').style.display = mode === 'login' ? 'block' : 'none';
       document.getElementById('registerForm').style.display = mode === 'register' ? 'block' : 'none';
+      document.getElementById('forgotForm').style.display = mode === 'forgot' ? 'block' : 'none';
+      document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
+      document.getElementById('tabRegister').classList.toggle('active', mode === 'register');
       document.getElementById('loginErr').textContent = '';
-      document.getElementById('registerErr').textContent = '';
+      document.getElementById('forgotErr').textContent = '';
+      document.getElementById('forgotOk').style.display = 'none';
     }
     async function submitLogin() {
       const username = document.getElementById('lwUsername').value.trim();
@@ -5287,6 +5310,29 @@
         onLoginSuccess(data.user);
       } catch (e) { errEl.textContent = 'Network error — is the server running?'; btn.disabled = false; btn.textContent = 'Create Account →'; }
     }
+
+    async function submitForgot() {
+      const email = document.getElementById('fpEmail').value.trim();
+      const password = document.getElementById('fpPassword').value;
+      const confirm = document.getElementById('fpConfirm').value;
+      const errEl = document.getElementById('forgotErr');
+      const okEl = document.getElementById('forgotOk');
+      errEl.textContent = ''; okEl.style.display = 'none';
+      if (!email || !password || !confirm) { errEl.textContent = 'All fields are required'; return; }
+      if (password !== confirm) { errEl.textContent = 'Passwords do not match'; return; }
+      if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters'; return; }
+      document.getElementById('btnForgotSubmit').disabled = true;
+      try {
+        const res = await fetch('/api/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.error || 'Reset failed'; return; }
+        okEl.textContent = '✓ Password reset! You can now sign in.';
+        okEl.style.display = 'block';
+        setTimeout(() => switchLoginTab('login'), 2000);
+      } catch (e) { errEl.textContent = 'Network error'; }
+      finally { document.getElementById('btnForgotSubmit').disabled = false; }
+    }
+
     function onLoginSuccess(user) {
       hideLoginWall();
       document.getElementById('userArea').style.display = 'flex';
