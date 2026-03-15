@@ -1,191 +1,146 @@
-# DataForge ETL Platform
-
-> Production-grade Data Engineering Platform built for portfolio demonstration.
-> Integrates **PySpark**, **Great Expectations**, **dbt**, and **Apache Airflow** in a single Flask-based web application.
+<div align="center">
+  <img src="https://via.placeholder.com/150?text=DataForge+Logo" alt="DataForge Logo" width="150" />
+  <h1>DataForge ETL Platform</h1>
+  <p>
+    <strong>A Production-Grade, Full-Stack Data Engineering & ETL Management Platform</strong>
+  </p>
+  
+  [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
+  [![Flask](https://img.shields.io/badge/Flask-2.x-black.svg)](https://flask.palletsprojects.com/)
+  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791.svg)](https://www.postgresql.org/)
+  [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
+  [![dbt](https://img.shields.io/badge/dbt-Core-FF694B.svg)](https://www.getdbt.com/)
+</div>
 
 ---
 
-## Architecture
+## 📌 Overview
 
-```
+**DataForge ETL Platform** is a comprehensive, web-based tool designed to streamline the Extraction, Transformation, and Loading (ETL) process. Built as a showcase of modern data engineering practices, it integrates industry-standard tools like **Great Expectations** and **dbt** into a cohesive, user-friendly Flask application.
+
+Whether you're processing small CSVs or large-scale datasets, DataForge provides an intuitive interface to profile data, build transformation pipelines, and enforce data quality rules.
+
+## ✨ Key Features
+
+- **📊 Automated Data Profiling:** Instantly generate column correlations, missing value analysis, and outlier detection upon dataset upload.
+- **🛠️ No-Code/Low-Code Pipeline Builder:** Construct complex ETL pipelines using a drag-and-drop or checklist interface with pre-built transformation steps.
+- **✅ Built-in Data Quality (Great Expectations):** Automatically validate data against predefined expectation suites to ensure pipeline integrity.
+- **🔄 SQL Modeling (dbt):** Automatically generate dbt models (`.sql` and `schema.yml`) from cleaned DataFrames for seamless analytics engineering.
+- **🔐 Secure Authentication:** Role-based access control with Flask-Login and Bcrypt password hashing.
+- **📈 Interactive Dashboard:** Monitor pipeline runs, success rates, and dataset metadata with Chart.js visualizations.
+
+---
+
+## 🏗️ Architecture
+
+DataForge employs a modular, containerized architecture:
+
+```text
 ┌──────────────────────────────────────────────────────────────┐
-│                     DataForge ETL Platform                    │
+│                     DataForge ETL Platform                   │
 ├────────────┬──────────────────┬───────────────┬─────────────┤
-│  Frontend  │   Flask Backend  │  ETL Engine   │  Database   │
+│  Frontend  │   Backend        │  ETL Engine   │  Storage    │
 │  (HTML/JS) │  REST API        │               │  PostgreSQL │
-│  Chart.js  │  Flask-Login     │  PySpark      │             │
-│            │  Flask-SQLAlchemy│  Great Expect.│  Tables:    │
-│            │  Flask-Bcrypt    │  dbt          │  users      │
-│            │                  │  Airflow API  │  datasets   │
-│            │                  │  Pandas       │  pipeline_  │
-│            │                  │  PyArrow      │    runs     │
-│            │                  │               │  tasks      │
-│            │                  │               │  quality_   │
-│            │                  │               │    checks   │
-│            │                  │               │  transforms │
+│  Chart.js  │  Flask           │  Great Expect.│             │
+│  CSS3      │  Flask-Login     │  dbt          │  Local FS / │
+│            │  SQLAlchemy      │  Pandas       │  Volumes    │
 └────────────┴──────────────────┴───────────────┴─────────────┘
 ```
 
-## ETL Pipeline Flow
+---
 
-```
- Upload File
-     │
-     ▼
-┌─────────┐    ┌─────────┐    ┌──────────────────┐    ┌───────────┐
-│ EXTRACT │ ──▶│ PROFILE │ ──▶│ QUALITY          │ ──▶│ TRANSFORM │
-│ Pandas  │    │ Pandas  │    │ Great Expectations│    │ Pandas /  │
-│ PySpark │    │         │    │ 15+ expectations  │    │ PySpark   │
-└─────────┘    └─────────┘    └──────────────────┘    └─────┬─────┘
-                                                             │
-     ┌───────────────────────────────────────────────────────┘
-     ▼
-┌─────────┐    ┌─────────┐    ┌─────────────────┐
-│   dbt   │ ──▶│  LOAD   │ ──▶│  AIRFLOW DAG    │
-│  Model  │    │  CSV    │    │  Trigger & Poll  │
-│  SQL    │    │ Parquet │    │  REST API        │
-└─────────┘    └─────────┘    └─────────────────┘
-```
+## 💻 Technology Stack
 
-## Database Schema
+**Backend:** Python, Flask, Flask-SQLAlchemy, Flask-Migrate, Flask-Login, Flask-CORS  
+**Data Engineering:** Pandas, PyArrow, Great Expectations, dbt-core  
+**Infrastructure:** Docker, Docker Compose  
+**Databases:** PostgreSQL 15, Redis 7
+**Frontend:** Vanilla JS, HTML5, CSS3, Chart.js  
 
-```sql
-users              -- registered accounts + auth
-login_sessions     -- login/logout audit trail
-datasets           -- file upload metadata + profile JSON
-pipeline_runs      -- ETL execution records (per dataset)
-pipeline_tasks     -- individual task results within a run
-quality_checks     -- Great Expectations validation results
-transformations    -- dbt / transform operation records
-```
+---
 
-## Quick Start
+## 🚀 Getting Started
 
 ### Prerequisites
-- Docker & Docker Compose
-- 8GB RAM minimum (for Spark)
 
-### Run with Docker Compose
+- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
+- Git
 
-```bash
-git clone <repo>
-cd dataforge-etl
+### Installation & Setup
 
-# Start everything
-docker compose up -d
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/dataforge-etl.git
+   cd dataforge-etl
+   ```
 
-# Wait ~60s for Airflow to initialize, then:
-open http://localhost:5000    # DataForge UI
-open http://localhost:8080    # Airflow UI (airflow/airflow)
-open http://localhost:8081    # Spark Master UI
-```
+2. **Configure Environment Variables:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your desired secrets and configurations
+   ```
 
-### Environment Variables
+3. **Start the Infrastructure using Docker Compose:**
+   ```bash
+   docker compose up -d
+   ```
+   *Note: On the first run, it may take 1-2 minutes for the database to fully initialize.*
 
-Copy `.env.example` to `.env` and configure:
-```
-DATABASE_URL=postgresql://dataforge:dataforge@postgres:5432/dataforge
-SECRET_KEY=your-secret-key
-AIRFLOW_API_URL=http://airflow-webserver:8080/api/v1
-AIRFLOW_USER=airflow
-AIRFLOW_PASSWORD=airflow
-SPARK_MASTER=local[*]
-```
-
-### Local Development (no Docker)
-
-```bash
-pip install -r requirements.txt
-
-# Requires running PostgreSQL
-export DATABASE_URL=postgresql://localhost/dataforge
-
-python -m backend.app
-```
+4. **Access the Services:**
+   - **DataForge UI:** [http://localhost:5000](http://localhost:5000)
 
 ---
 
-## API Reference
+## 🧩 Pipeline Transformation Steps
 
-### Auth
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Create account |
-| POST | `/api/auth/login` | Login |
-| POST | `/api/auth/logout` | Logout |
-| GET  | `/api/auth/me` | Current user |
-| GET  | `/api/auth/sessions` | Login audit log |
+DataForge supports a variety of modular transformation operators:
 
-### Datasets
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/datasets/upload` | Upload file → profile → GE check |
-| GET  | `/api/datasets/` | List all datasets |
-| GET  | `/api/datasets/<ds_id>` | Dataset detail |
-| DELETE | `/api/datasets/<ds_id>` | Delete dataset |
-
-### Pipeline
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/pipeline/run` | Run full ETL pipeline |
-| GET  | `/api/pipeline/download/<run_id>` | Download cleaned CSV |
-| GET  | `/api/pipeline/download/<run_id>?format=parquet` | Download Parquet |
-| GET  | `/api/pipeline/dag-status/<run_id>` | Airflow DAG status |
-| GET  | `/api/pipeline/spark-status` | Spark availability |
-
-### History
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/history/runs` | All pipeline runs |
-| GET | `/api/history/runs/<run_id>` | Single run detail |
-| GET | `/api/history/quality` | Quality check history |
-| GET | `/api/history/transformations` | Transform history |
-| GET | `/api/history/stats` | Dashboard statistics |
+| Operator | Engine | Description |
+|----------|--------|-------------|
+| `snake_case_columns` | Pandas | Standardizes column headers to `snake_case` format. |
+| `drop_duplicates` | Pandas | Identifies and removes exact duplicate records. |
+| `drop_missing` | Pandas | Drops columns exceeding a configurable null threshold (e.g., >80% missing). |
+| `fill_missing` | Pandas | Imputes missing values using strategies like median, mean, mode, or ffill. |
+| `remove_outliers` | Pandas | Cleans statistical anomalies using IQR or Z-score methods. |
+| `cast_types` | Pandas | Intelligently infers and casts column data types (numeric, datetime). |
+| `normalize` | Pandas | Min-Max scaling of numeric variables to a `[0,1]` range. |
+| `standardize` | Pandas | Z-score standardization (mean=0, std=1). |
 
 ---
 
-## ETL Tools Integration
+## 📸 Screenshots
 
-### PySpark
-- Used for large file extraction and `spark_repartition` transform
-- Lazy singleton session (`local[*]` in dev, `spark://spark-master:7077` in Docker)
-- Fallback to Pandas if Spark unavailable
+*(Replace these placeholder links with actual screenshots of your application)*
 
-### Great Expectations
-- Auto-generates expectation suite per dataset
-- Checks: column existence, null rates, numeric ranges, uniqueness, cardinality
-- Falls back to built-in lite quality engine if GE not installed
-- Results stored in `quality_checks` table
-
-### dbt
-- Generates `.sql` model + `schema.yml` from cleaned DataFrame
-- Uses `{{ source() }}` macros for proper dbt lineage
-- Staging models cast + rename columns
-- Mart models join pipeline metadata for analytics
-- Run via `dbt run --select <model>` or triggered through Airflow
-
-### Apache Airflow
-- DAG: `dataforge_etl_pipeline`
-- Schedule: on-demand (triggered via REST API)
-- Tasks: extract → quality_check → transform → dbt_run → dbt_test → load → notify
-- Triggered by Flask via `/api/v1/dags/{dag_id}/dagRuns`
-- Status polled via `/api/pipeline/dag-status/<run_id>`
+| Dashboard | Pipeline Builder |
+|:---:|:---:|
+| <img src="https://via.placeholder.com/400x250?text=Dashboard+Screenshot" alt="Dashboard" /> | <img src="https://via.placeholder.com/400x250?text=Pipeline+Builder+Screenshot" alt="Pipeline Builder" /> |
+| **Data Profiling & Quality** | **Run History & Logs** |
+| <img src="https://via.placeholder.com/400x250?text=Data+Profiling+Screenshot" alt="Data Profiling" /> | <img src="https://via.placeholder.com/400x250?text=Run+Logs+Screenshot" alt="Run History" /> |
 
 ---
 
-## Transform Steps
+## 🔮 Future Enhancements
 
-| Step | Tool | Description |
-|------|------|-------------|
-| `snake_case_columns` | pandas | Rename all columns to snake_case |
-| `drop_duplicates` | pandas | Remove exact duplicate rows |
-| `drop_missing` | pandas | Drop columns with >80% null rate |
-| `fill_missing` | pandas | Fill nulls (median/mean/mode/ffill/constant) |
-| `remove_outliers` | pandas | IQR or Z-score outlier removal |
-| `cast_types` | pandas | Auto-cast numeric/datetime columns |
-| `normalize` | pandas | Min-max normalize to [0,1] |
-| `standardize` | pandas | Z-score standardize |
-| `filter_rows` | pandas | Filter rows by column condition |
-| `aggregate` | pandas | Group-by + aggregation |
-| `derive_column` | pandas | Add computed column via expression |
-| `spark_repartition` | pyspark | Demonstrate Spark distributed partitioning |
+- [ ] Connect directly to external data warehouses (Snowflake, BigQuery, Redshift).
+- [ ] Add real-time streaming data ingestion support using Apache Kafka.
+- [ ] Implement advanced custom dbt macro generation via the UI.
+- [ ] Support cloud storage paths (AWS S3, Google Cloud Storage, Azure Blob).
+
+---
+
+## 👨‍💻 About the Author
+
+This project was built to demonstrate proficiency in modern Data Engineering technologies, backend API design, and containerized deployments.
+
+**[Your Name / Your Portfolio Link]**  
+*Data Engineer / Backend Developer*
+
+- **LinkedIn:** [linkedin.com/in/yourprofile](https://linkedin.com/in/yourprofile)
+- **GitHub:** [github.com/yourusername](https://github.com/yourusername)
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

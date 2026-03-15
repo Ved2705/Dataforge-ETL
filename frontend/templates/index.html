@@ -3558,7 +3558,7 @@
     <main class="content">
 
       <input type="hidden" id="tDbt" value="true">
-      <input type="hidden" id="tAI" value="true">
+      <input type="checkbox" id="tAI" checked style="display:none">
       <input type="hidden" id="tParquet" value="true">
 
       <!-- UPLOAD VIEW -->
@@ -4410,7 +4410,8 @@
         await sleep(300);
         document.getElementById('progressSection').style.display = 'none';
         renderResults(lastRunData, upData);
-        if (document.getElementById('tAI').checked && currentDsId) runAIAnalysis(currentDsId, upData.profile);
+        currentDsId = upData.ds_id;
+        runAIAnalysis(upData.ds_id, upData.profile);
         setStatus('green', 'Pipeline complete');
         updateRunCountBadge();
       } catch (e) { clearInterval(timer); setStatus('red', 'Failed'); document.getElementById('progressSection').style.display = 'none'; alert('Error: ' + e.message); }
