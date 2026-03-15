@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: dataforge-etl
+    runtime: docker
+    dockerfilePath: ./docker/Dockerfile.backend
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dataforge-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: UPLOAD_FOLDER
+        value: /app/data/raw
+      - key: OUTPUT_FOLDER
+        value: /app/data/processed
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+
+databases:
+  - name: dataforge-db
+    plan: free
+    databaseName: dataforge
+    user: dataforge

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataForge ETL — Enterprise Data Engineering Platform</title>
+<meta name="description" content="DataForge ETL: The all-in-one enterprise data engineering platform. Upload, profile, validate, transform, and deliver production-ready datasets with PySpark, dbt, Great Expectations, Airflow, and AI.">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ═══ DESIGN TOKENS ═══ */
+:root{--bg:#060a10;--s1:#0b1018;--s2:#101620;--s3:#161e2a;--s4:#1c2535;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--border3:rgba(255,255,255,0.16);--green:#00e5a0;--blue:#4f8eff;--orange:#ff9442;--red:#ff4d6d;--purple:#a78bfa;--cyan:#22d3ee;--gold:#f59e0b;--text:#dce8f0;--text2:#7a9ab0;--text3:#3a5568;--mono:'IBM Plex Mono',monospace;--sans:'Geist',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ═══ GRID BG ═══ */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(79,142,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,255,0.02) 1px,transparent 1px);background-size:40px 40px;}
+
+/* ═══ ORBS ═══ */
+.orb{position:fixed;border-radius:50%;filter:blur(130px);pointer-events:none;z-index:0;}
+.orb1{width:600px;height:600px;top:-200px;left:-100px;background:radial-gradient(circle,rgba(0,229,160,.1),transparent 65%);}
+.orb2{width:500px;height:500px;bottom:-100px;right:-50px;background:radial-gradient(circle,rgba(79,142,255,.09),transparent 65%);}
+.orb3{width:400px;height:400px;top:50%;left:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(167,139,250,.05),transparent 65%);}
+
+/* ═══ NAV ═══ */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,10,16,.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{display:flex;align-items:center;gap:.65rem;text-decoration:none;}
+.nav-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;}
+.nav-title{font-size:1.1rem;font-weight:800;letter-spacing:-.03em;color:var(--text);}
+.nav-title em{font-style:normal;color:var(--green);}
+.nav-links{display:flex;align-items:center;gap:2rem;}
+.nav-link{color:var(--text2);text-decoration:none;font-size:.85rem;font-weight:500;transition:color .2s;}
+.nav-link:hover{color:var(--text);}
+.nav-cta{display:inline-flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,var(--green),#00b87a);color:#000;text-decoration:none;padding:.55rem 1.3rem;border-radius:8px;font-size:.85rem;font-weight:700;transition:all .25s;box-shadow:0 4px 14px rgba(0,229,160,.25);}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,229,160,.35);}
+.nav-signin{color:var(--text2);text-decoration:none;font-size:.85rem;font-weight:500;border:1px solid var(--border2);padding:.5rem 1.1rem;border-radius:8px;transition:all .2s;}
+.nav-signin:hover{border-color:var(--border3);color:var(--text);}
+
+/* ═══ HERO ═══ */
+.hero{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:8rem 2rem 4rem;text-align:center;}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,229,160,.06);border:1px solid rgba(0,229,160,.18);border-radius:999px;padding:.4rem 1.1rem;font-family:var(--mono);font-size:.68rem;color:var(--green);margin-bottom:1.5rem;animation:fadeDown .6s ease both;}
+.hero-badge .pulse{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink2 1.5s infinite;}
+@keyframes blink2{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;letter-spacing:-.05em;line-height:1.08;margin-bottom:1.2rem;animation:fadeDown .7s ease both .1s;opacity:0;}
+.hero h1 .grad{background:linear-gradient(135deg,var(--green),var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;background-size:200% 200%;animation:gradShift 4s ease infinite;}
+@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-sub{font-size:clamp(1rem,2vw,1.25rem);color:var(--text2);max-width:640px;margin:0 auto 2.5rem;line-height:1.7;animation:fadeDown .7s ease both .2s;opacity:0;}
+.hero-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadeDown .7s ease both .3s;opacity:0;}
+.btn-hero{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 2rem;border-radius:10px;font-family:var(--sans);font-size:1rem;font-weight:700;text-decoration:none;cursor:pointer;border:none;transition:all .25s;}
+.btn-hero.primary{background:linear-gradient(135deg,var(--green),#00a870);color:#000;box-shadow:0 6px 24px rgba(0,229,160,.3);}
+.btn-hero.primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,229,160,.4);}
+.btn-hero.secondary{background:rgba(255,255,255,.04);border:1px solid var(--border2);color:var(--text2);}
+.btn-hero.secondary:hover{border-color:var(--border3);color:var(--text);background:rgba(255,255,255,.06);}
+
+/* ═══ HERO VISUAL ═══ */
+.hero-visual{position:relative;max-width:900px;margin:3.5rem auto 0;animation:fadeUp .8s ease both .5s;opacity:0;}
+.hero-screen{background:var(--s1);border:1px solid var(--border2);border-radius:16px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);position:relative;}
+.hero-screen::after{content:'';position:absolute;inset:0;border-radius:16px;background:linear-gradient(180deg,rgba(0,229,160,.03) 0%,transparent 40%);pointer-events:none;}
+.screen-bar{height:36px;background:var(--s2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 .9rem;gap:.5rem;}
+.screen-dot{width:10px;height:10px;border-radius:50%;}
+.screen-dot.r{background:#ff5f57;}
+.screen-dot.y{background:#febc2e;}
+.screen-dot.g{background:#28c840;}
+.screen-url{margin-left:.6rem;background:var(--s3);border-radius:5px;padding:.25rem .8rem;font-family:var(--mono);font-size:.6rem;color:var(--text3);flex:1;max-width:300px;}
+.screen-body{padding:1.5rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;}
+.mock-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:1rem;animation:shimmer 2.5s ease infinite;}
+.mock-card:nth-child(2){animation-delay:.3s;}
+.mock-card:nth-child(3){animation-delay:.6s;}
+.mock-label{font-family:var(--mono);font-size:.55rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;}
+.mock-val{font-size:1.6rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.2rem;}
+.mock-val.v-green{color:var(--green);}
+.mock-val.v-blue{color:var(--blue);}
+.mock-val.v-purple{color:var(--purple);}
+.mock-bar{height:4px;background:var(--s3);border-radius:999px;margin-top:.5rem;overflow:hidden;}
+.mock-bar-fill{height:100%;border-radius:999px;animation:barGrow 1.8s ease both;}
+.mock-bar-fill.bg{background:linear-gradient(90deg,var(--green),var(--cyan));}
+.mock-bar-fill.bb{background:linear-gradient(90deg,var(--blue),var(--purple));}
+.mock-bar-fill.bp{background:linear-gradient(90deg,var(--purple),var(--orange));}
+@keyframes barGrow{from{width:0}to{width:var(--w,80%)}}
+@keyframes shimmer{0%,100%{opacity:1}50%{opacity:.92}}
+.screen-body-row2{padding:0 1.5rem 1.5rem;display:flex;gap:.75rem;}
+.mock-flow{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:.75rem;display:flex;align-items:center;gap:.5rem;overflow:hidden;}
+.flow-node{padding:.35rem .65rem;border-radius:5px;font-family:var(--mono);font-size:.55rem;white-space:nowrap;}
+.flow-node.fn-g{background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.2);color:var(--green);}
+.flow-node.fn-b{background:rgba(79,142,255,.08);border:1px solid rgba(79,142,255,.2);color:var(--blue);}
+.flow-node.fn-p{background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);color:var(--purple);}
+.flow-node.fn-c{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.2);color:var(--cyan);}
+.flow-arrow{color:var(--text3);font-size:.6rem;}
+.hero-glow{position:absolute;bottom:-60px;left:50%;transform:translateX(-50%);width:70%;height:120px;background:radial-gradient(ellipse,rgba(0,229,160,.12),transparent 70%);filter:blur(40px);pointer-events:none;}
+
+/* ═══ TECH STACK ═══ */
+.tech-section{position:relative;z-index:1;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(11,16,24,.6);padding:1.5rem 0;overflow:hidden;}
+.tech-track{display:flex;gap:3rem;align-items:center;animation:scroll 25s linear infinite;width:max-content;}
+.tech-item{display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.72rem;color:var(--text2);white-space:nowrap;flex-shrink:0;opacity:.7;transition:opacity .2s;}
+.tech-item:hover{opacity:1;}
+.tech-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.85rem;border:1px solid var(--border2);}
+.tech-icon.ti-spark{background:rgba(255,148,66,.08);border-color:rgba(255,148,66,.2);}
+.tech-icon.ti-ge{background:rgba(0,229,160,.06);border-color:rgba(0,229,160,.2);}
+.tech-icon.ti-dbt{background:rgba(167,139,250,.06);border-color:rgba(167,139,250,.2);}
+.tech-icon.ti-airflow{background:rgba(34,211,238,.06);border-color:rgba(34,211,238,.2);}
+.tech-icon.ti-pandas{background:rgba(79,142,255,.06);border-color:rgba(79,142,255,.2);}
+.tech-icon.ti-ai{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.2);}
+.tech-icon.ti-python{background:rgba(79,142,255,.06);border-color:rgba(79,142,255,.2);}
+.tech-icon.ti-flask{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);}
+@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ═══ FEATURES ═══ */
+.features{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:6rem 2rem;}
+.section-label{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--green);margin-bottom:.75rem;}
+.section-label .sl-dot{width:5px;height:5px;border-radius:50%;background:var(--green);}
+.section-title{font-size:clamp(1.7rem,4vw,2.8rem);font-weight:900;letter-spacing:-.04em;line-height:1.15;margin-bottom:.65rem;}
+.section-sub{color:var(--text2);font-size:1rem;line-height:1.7;max-width:560px;margin-bottom:3rem;}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;}
+.feat-card{position:relative;background:rgba(11,16,24,.7);border:1px solid var(--border);border-radius:16px;padding:1.75rem;transition:all .35s;overflow:hidden;}
+.feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--card-accent,var(--green)),transparent);opacity:0;transition:opacity .35s;}
+.feat-card:hover{border-color:var(--border2);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.4);}
+.feat-card:hover::before{opacity:1;}
+.feat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:1.1rem;border:1px solid var(--border2);}
+.feat-icon.fi-green{background:rgba(0,229,160,.07);border-color:rgba(0,229,160,.15);}
+.feat-icon.fi-blue{background:rgba(79,142,255,.07);border-color:rgba(79,142,255,.15);}
+.feat-icon.fi-orange{background:rgba(255,148,66,.07);border-color:rgba(255,148,66,.15);}
+.feat-icon.fi-purple{background:rgba(167,139,250,.07);border-color:rgba(167,139,250,.15);}
+.feat-icon.fi-cyan{background:rgba(34,211,238,.07);border-color:rgba(34,211,238,.15);}
+.feat-icon.fi-gold{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.15);}
+.feat-title{font-size:1.05rem;font-weight:700;margin-bottom:.45rem;letter-spacing:-.02em;}
+.feat-desc{font-size:.82rem;color:var(--text2);line-height:1.7;margin-bottom:1rem;}
+.feat-tags{display:flex;gap:.35rem;flex-wrap:wrap;}
+.feat-tag{font-family:var(--mono);font-size:.55rem;padding:.12rem .48rem;border-radius:4px;background:var(--s3);border:1px solid var(--border);color:var(--text3);}
+
+/* ═══ HOW IT WORKS ═══ */
+.how{position:relative;z-index:1;padding:6rem 2rem;background:linear-gradient(180deg,transparent,rgba(0,229,160,.015),transparent);}
+.how-inner{max-width:1200px;margin:0 auto;}
+.how-steps{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;align-items:start;margin-top:2rem;}
+.how-step{text-align:center;padding:1.5rem;}
+.how-num{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--s2),var(--s3));border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:1.2rem;font-weight:800;color:var(--green);margin:0 auto 1.1rem;}
+.how-step-title{font-size:1.15rem;font-weight:700;margin-bottom:.4rem;letter-spacing:-.02em;}
+.how-step-desc{font-size:.82rem;color:var(--text2);line-height:1.7;max-width:240px;margin:0 auto;}
+.how-arrow{display:flex;align-items:center;justify-content:center;padding-top:2rem;}
+.how-arrow-line{width:60px;height:2px;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:1px;position:relative;}
+.how-arrow-line::after{content:'›';position:absolute;right:-10px;top:-9px;font-size:1.2rem;color:var(--blue);}
+.how-tools{display:flex;gap:.35rem;justify-content:center;margin-top:.75rem;}
+.how-tool{font-family:var(--mono);font-size:.55rem;padding:.15rem .5rem;border-radius:4px;border:1px solid var(--border2);}
+.how-tool.ht-g{border-color:rgba(0,229,160,.25);color:var(--green);}
+.how-tool.ht-b{border-color:rgba(79,142,255,.25);color:var(--blue);}
+.how-tool.ht-p{border-color:rgba(167,139,250,.25);color:var(--purple);}
+.how-tool.ht-o{border-color:rgba(255,148,66,.25);color:var(--orange);}
+.how-tool.ht-c{border-color:rgba(34,211,238,.25);color:var(--cyan);}
+
+/* ═══ STATS ═══ */
+.stats{position:relative;z-index:1;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--s1);padding:4rem 2rem;}
+.stats-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;text-align:center;}
+.stat-item .stat-number{font-size:clamp(2rem,5vw,3.2rem);font-weight:900;letter-spacing:-.04em;margin-bottom:.3rem;}
+.stat-item .stat-number.sn-green{color:var(--green);}
+.stat-item .stat-number.sn-blue{color:var(--blue);}
+.stat-item .stat-number.sn-purple{color:var(--purple);}
+.stat-item .stat-number.sn-cyan{color:var(--cyan);}
+.stat-item .stat-desc{font-family:var(--mono);font-size:.68rem;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;}
+
+/* ═══ ARCHITECTURE ═══ */
+.arch{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:6rem 2rem;}
+.arch-diagram{background:var(--s1);border:1px solid var(--border);border-radius:18px;padding:2.5rem;overflow:hidden;position:relative;}
+.arch-diagram::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,229,160,.02),rgba(79,142,255,.02),rgba(167,139,250,.02));pointer-events:none;}
+.arch-layers{display:flex;flex-direction:column;gap:1.5rem;position:relative;z-index:1;}
+.arch-layer{display:flex;align-items:center;gap:1rem;}
+.arch-layer-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);width:100px;flex-shrink:0;text-align:right;}
+.arch-nodes{display:flex;gap:.65rem;flex-wrap:wrap;flex:1;}
+.arch-node{display:flex;align-items:center;gap:.45rem;padding:.55rem .85rem;border-radius:8px;border:1px solid var(--border2);background:var(--s2);font-family:var(--mono);font-size:.68rem;color:var(--text2);transition:all .25s;}
+.arch-node:hover{border-color:var(--border3);background:var(--s3);transform:translateY(-2px);}
+.arch-node .an-icon{font-size:.85rem;}
+.arch-node.an-green{border-color:rgba(0,229,160,.2);}
+.arch-node.an-blue{border-color:rgba(79,142,255,.2);}
+.arch-node.an-purple{border-color:rgba(167,139,250,.2);}
+.arch-node.an-orange{border-color:rgba(255,148,66,.2);}
+.arch-node.an-cyan{border-color:rgba(34,211,238,.2);}
+.arch-node.an-gold{border-color:rgba(245,158,11,.2);}
+.arch-connector{height:24px;display:flex;align-items:center;padding-left:112px;}
+.arch-connector-line{width:2px;height:100%;background:linear-gradient(180deg,rgba(0,229,160,.3),rgba(79,142,255,.3));margin:0 2rem;}
+.arch-connector-dots{display:flex;gap:1.5rem;}
+.arch-connector-dot{width:4px;height:4px;border-radius:50%;background:var(--text3);}
+
+/* ═══ CTA ═══ */
+.cta{position:relative;z-index:1;padding:6rem 2rem;text-align:center;}
+.cta-inner{max-width:700px;margin:0 auto;background:linear-gradient(135deg,rgba(0,229,160,.04),rgba(79,142,255,.04));border:1px solid rgba(0,229,160,.12);border-radius:24px;padding:3.5rem 2.5rem;position:relative;overflow:hidden;}
+.cta-inner::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 50% 100%,rgba(0,229,160,.06),transparent 50%);pointer-events:none;}
+.cta h2{font-size:clamp(1.5rem,4vw,2.4rem);font-weight:900;letter-spacing:-.04em;margin-bottom:.6rem;position:relative;}
+.cta p{color:var(--text2);font-size:1rem;line-height:1.7;margin-bottom:2rem;position:relative;}
+.cta-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative;}
+
+/* ═══ FOOTER ═══ */
+.footer{position:relative;z-index:1;border-top:1px solid var(--border);background:var(--s1);padding:3rem 2rem 2rem;}
+.footer-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:2rem;}
+.footer-brand{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;}
+.footer-brand-icon{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;}
+.footer-brand-name{font-size:.95rem;font-weight:700;}
+.footer-brand-name em{font-style:normal;color:var(--green);}
+.footer-desc{font-size:.78rem;color:var(--text3);max-width:280px;line-height:1.6;margin-bottom:1rem;}
+.footer-badges{display:flex;gap:.35rem;flex-wrap:wrap;}
+.footer-badge{font-family:var(--mono);font-size:.55rem;padding:.15rem .5rem;border-radius:4px;border:1px solid var(--border2);color:var(--text3);}
+.footer-col h4{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.85rem;}
+.footer-col a{display:block;color:var(--text2);text-decoration:none;font-size:.8rem;margin-bottom:.5rem;transition:color .2s;}
+.footer-col a:hover{color:var(--green);}
+.footer-bottom{max-width:1200px;margin:2rem auto 0;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;font-family:var(--mono);font-size:.6rem;color:var(--text3);}
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(30px);transition:all .7s cubic-bezier(.16,1,.3,1);}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ═══ MOBILE NAV ═══ */
+.nav-toggle{display:none;background:none;border:none;color:var(--text2);font-size:1.3rem;cursor:pointer;padding:.3rem;}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:900px){
+  .nav-links{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;background:rgba(6,10,16,.96);backdrop-filter:blur(20px);padding:1.5rem;gap:1rem;border-bottom:1px solid var(--border);}
+  .nav-links.open{display:flex;}
+  .nav-toggle{display:block;}
+  .features-grid{grid-template-columns:1fr;}
+  .how-steps{grid-template-columns:1fr;gap:1rem;}
+  .how-arrow{display:none;}
+  .stats-inner{grid-template-columns:1fr 1fr;}
+  .screen-body{grid-template-columns:1fr;}
+  .screen-body-row2{display:none;}
+  .arch-layer{flex-direction:column;align-items:flex-start;}
+  .arch-layer-label{width:auto;text-align:left;}
+  .arch-connector{padding-left:0;}
+  .footer-inner{flex-direction:column;}
+}
+@media(max-width:600px){
+  .hero h1{font-size:2rem;}
+  .features-grid{grid-template-columns:1fr;}
+  .stats-inner{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav" id="navbar">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">
+      <div class="nav-icon"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M3 4h14M3 10h14M3 16h14" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="7" cy="4" r="2" fill="#00e5a0"/><circle cx="13" cy="10" r="2" fill="#4f8eff"/><circle cx="9" cy="16" r="2" fill="#ff9442"/></svg></div>
+      <span class="nav-title">Data<em>Forge</em> ETL</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+    <div class="nav-links" id="navLinks">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how" class="nav-link">How It Works</a>
+      <a href="#architecture" class="nav-link">Architecture</a>
+      <a href="/app?fresh=1" class="nav-signin">Sign In</a>
+      <a href="/app?fresh=1" class="nav-cta">Get Started →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-badge"><span class="pulse"></span> Enterprise-Grade ETL Platform</div>
+  <h1>Transform Raw Data Into<br><span class="grad">Production-Ready Pipelines</span></h1>
+  <p class="hero-sub">Upload, profile, validate, and transform your data with PySpark, Great Expectations, dbt, and AI‑powered analysis — all from one unified platform.</p>
+  <div class="hero-actions">
+    <a href="/app?fresh=1" class="btn-hero primary">Start Building Pipelines →</a>
+    <a href="#how" class="btn-hero secondary">▷ See How It Works</a>
+  </div>
+
+  <div class="hero-visual">
+    <div class="hero-screen">
+      <div class="screen-bar">
+        <span class="screen-dot r"></span><span class="screen-dot y"></span><span class="screen-dot g"></span>
+        <span class="screen-url">www.dataforge.com / pipeline-studio</span>
+      </div>
+      <div class="screen-body">
+        <div class="mock-card">
+          <div class="mock-label">Input Rows</div>
+          <div class="mock-val v-green" id="mockRows">24,847</div>
+          <div class="mock-bar"><div class="mock-bar-fill bg" style="--w:92%"></div></div>
+        </div>
+        <div class="mock-card">
+          <div class="mock-label">Quality Score</div>
+          <div class="mock-val v-blue" id="mockQuality">96.4%</div>
+          <div class="mock-bar"><div class="mock-bar-fill bb" style="--w:96%"></div></div>
+        </div>
+        <div class="mock-card">
+          <div class="mock-label">Transforms</div>
+          <div class="mock-val v-purple" id="mockTransforms">6 / 6</div>
+          <div class="mock-bar"><div class="mock-bar-fill bp" style="--w:100%"></div></div>
+        </div>
+      </div>
+      <div class="screen-body-row2">
+        <div class="mock-flow">
+          <span class="flow-node fn-g">Extract</span><span class="flow-arrow">→</span>
+          <span class="flow-node fn-b">Profile</span><span class="flow-arrow">→</span>
+          <span class="flow-node fn-g">Quality</span><span class="flow-arrow">→</span>
+          <span class="flow-node fn-p">Transform</span><span class="flow-arrow">→</span>
+          <span class="flow-node fn-p">dbt</span><span class="flow-arrow">→</span>
+          <span class="flow-node fn-c">Load</span><span class="flow-arrow">→</span>
+          <span class="flow-node fn-c">Airflow</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-glow"></div>
+  </div>
+</section>
+
+<!-- ═══ TECH STACK ═══ -->
+<section class="tech-section">
+  <div class="tech-track" id="techTrack">
+    <div class="tech-item"><div class="tech-icon ti-spark">⚡</div>PySpark</div>
+    <div class="tech-item"><div class="tech-icon ti-ge">✅</div>Great Expectations</div>
+    <div class="tech-item"><div class="tech-icon ti-dbt">🔧</div>dbt Core</div>
+    <div class="tech-item"><div class="tech-icon ti-airflow">🌀</div>Apache Airflow</div>
+    <div class="tech-item"><div class="tech-icon ti-pandas">🐼</div>Pandas</div>
+    <div class="tech-item"><div class="tech-icon ti-ai">🤖</div>AI Analysis</div>
+    <div class="tech-item"><div class="tech-icon ti-python">🐍</div>Python</div>
+    <div class="tech-item"><div class="tech-icon ti-flask">⚗️</div>Flask</div>
+    <!-- duplicate for seamless loop -->
+    <div class="tech-item"><div class="tech-icon ti-spark">⚡</div>PySpark</div>
+    <div class="tech-item"><div class="tech-icon ti-ge">✅</div>Great Expectations</div>
+    <div class="tech-item"><div class="tech-icon ti-dbt">🔧</div>dbt Core</div>
+    <div class="tech-item"><div class="tech-icon ti-airflow">🌀</div>Apache Airflow</div>
+    <div class="tech-item"><div class="tech-icon ti-pandas">🐼</div>Pandas</div>
+    <div class="tech-item"><div class="tech-icon ti-ai">🤖</div>AI Analysis</div>
+    <div class="tech-item"><div class="tech-icon ti-python">🐍</div>Python</div>
+    <div class="tech-item"><div class="tech-icon ti-flask">⚗️</div>Flask</div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section class="features" id="features">
+  <div class="section-label"><span class="sl-dot"></span> Platform Capabilities</div>
+  <div class="section-title">Everything You Need for<br>Modern Data Engineering</div>
+  <div class="section-sub">From ingestion to delivery, DataForge covers the complete data lifecycle with enterprise-grade tools and AI-powered intelligence.</div>
+
+  <div class="features-grid">
+    <div class="feat-card reveal" style="--card-accent:var(--green);">
+      <div class="feat-icon fi-green">📤</div>
+      <div class="feat-title">ETL Pipeline Studio</div>
+      <div class="feat-desc">Drag-and-drop pipeline builder with configurable transform steps. Upload CSV, JSON, XLSX, Parquet and watch your data flow through extraction, profiling, quality checks, and transformation in real-time.</div>
+      <div class="feat-tags"><span class="feat-tag">upload</span><span class="feat-tag">transform</span><span class="feat-tag">pipeline</span></div>
+    </div>
+    <div class="feat-card reveal" style="--card-accent:var(--gold);">
+      <div class="feat-icon fi-gold">🤖</div>
+      <div class="feat-title">AI Column Analysis</div>
+      <div class="feat-desc">Powered by Claude AI, automatically analyze columns to detect PII, infer semantic types, suggest transformations, and generate human-readable summaries of your datasets.</div>
+      <div class="feat-tags"><span class="feat-tag">AI</span><span class="feat-tag">PII detection</span><span class="feat-tag">semantic</span></div>
+    </div>
+    <div class="feat-card reveal" style="--card-accent:var(--cyan);">
+      <div class="feat-icon fi-cyan">✅</div>
+      <div class="feat-title">Data Quality Engine</div>
+      <div class="feat-desc">Integrated Great Expectations for automated data quality validation. Run expectation suites, get quality scores, and track pass/fail rates across columns with beautiful reports.</div>
+      <div class="feat-tags"><span class="feat-tag">great expectations</span><span class="feat-tag">validation</span></div>
+    </div>
+    <div class="feat-card reveal" style="--card-accent:var(--purple);">
+      <div class="feat-icon fi-purple">🔧</div>
+      <div class="feat-title">dbt Model Generation</div>
+      <div class="feat-desc">Auto-generate production-ready dbt models and schema YAML from your transformed data. Copy SQL directly or export full dbt project structure.</div>
+      <div class="feat-tags"><span class="feat-tag">dbt</span><span class="feat-tag">SQL</span><span class="feat-tag">models</span></div>
+    </div>
+    <div class="feat-card reveal" style="--card-accent:var(--orange);">
+      <div class="feat-icon fi-orange">⏰</div>
+      <div class="feat-title">Scheduled Pipelines</div>
+      <div class="feat-desc">Automate recurring ETL runs with flexible scheduling — hourly, daily, weekly, or monthly. Get notified via email or Slack when pipelines complete.</div>
+      <div class="feat-tags"><span class="feat-tag">scheduler</span><span class="feat-tag">notifications</span><span class="feat-tag">automation</span></div>
+    </div>
+    <div class="feat-card reveal" style="--card-accent:var(--blue);">
+      <div class="feat-icon fi-blue">💬</div>
+      <div class="feat-title">Natural Language Queries</div>
+      <div class="feat-desc">Ask questions about your data in plain English. The AI translates your questions into Pandas code, executes them, and returns results with explanations.</div>
+      <div class="feat-tags"><span class="feat-tag">NL queries</span><span class="feat-tag">AI</span><span class="feat-tag">analytics</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how" id="how">
+  <div class="how-inner">
+    <div style="text-align:center;">
+      <div class="section-label" style="justify-content:center;"><span class="sl-dot"></span> Workflow</div>
+      <div class="section-title" style="margin-left:auto;margin-right:auto;">Three Steps to Clean Data</div>
+      <div class="section-sub" style="margin-left:auto;margin-right:auto;text-align:center;">From raw file to production-ready dataset in minutes, not hours.</div>
+    </div>
+
+    <div class="how-steps reveal">
+      <!-- Step 1 -->
+      <div class="how-step">
+        <div class="how-num">01</div>
+        <div class="how-step-title">Upload & Ingest</div>
+        <div class="how-step-desc">Drop your file — CSV, JSON, XLSX, or Parquet. DataForge instantly profiles columns, detects types, and surfaces missing values.</div>
+        <div class="how-tools">
+          <span class="how-tool ht-b">Pandas</span>
+          <span class="how-tool ht-o">PySpark</span>
+        </div>
+      </div>
+
+      <div class="how-arrow"><div class="how-arrow-line"></div></div>
+
+      <!-- Step 2 -->
+      <div class="how-step">
+        <div class="how-num">02</div>
+        <div class="how-step-title">Validate & Transform</div>
+        <div class="how-step-desc">Run Great Expectations quality checks, apply configurable transforms, and let AI flag PII and suggest improvements.</div>
+        <div class="how-tools">
+          <span class="how-tool ht-g">GE</span>
+          <span class="how-tool ht-p">dbt</span>
+          <span class="how-tool ht-o">AI</span>
+        </div>
+      </div>
+
+      <div class="how-arrow"><div class="how-arrow-line"></div></div>
+
+      <!-- Step 3 -->
+      <div class="how-step">
+        <div class="how-num">03</div>
+        <div class="how-step-title">Deliver & Schedule</div>
+        <div class="how-step-desc">Export clean CSV or Parquet, generate dbt models, trigger Airflow DAGs, and schedule recurring pipeline runs.</div>
+        <div class="how-tools">
+          <span class="how-tool ht-c">Airflow</span>
+          <span class="how-tool ht-p">dbt</span>
+          <span class="how-tool ht-g">Export</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATS ═══ -->
+<section class="stats">
+  <div class="stats-inner reveal">
+    <div class="stat-item">
+      <div class="stat-number sn-green" data-target="6" data-suffix="+">0+</div>
+      <div class="stat-desc">Transform Steps</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number sn-blue" data-target="8">0</div>
+      <div class="stat-desc">Pipeline Templates</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number sn-purple" data-target="5">0</div>
+      <div class="stat-desc">Integrated Tools</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number sn-cyan" data-target="100" data-suffix="%">0%</div>
+      <div class="stat-desc">Open Source</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ARCHITECTURE ═══ -->
+<section class="arch" id="architecture">
+  <div style="text-align:center;margin-bottom:3rem;">
+    <div class="section-label" style="justify-content:center;"><span class="sl-dot"></span> Under the Hood</div>
+    <div class="section-title">Built on Best-in-Class Tools</div>
+    <div class="section-sub" style="margin-left:auto;margin-right:auto;text-align:center;">DataForge integrates industry-standard data engineering tools into one cohesive platform.</div>
+  </div>
+
+  <div class="arch-diagram reveal">
+    <div class="arch-layers">
+      <div class="arch-layer">
+        <div class="arch-layer-label">Ingestion</div>
+        <div class="arch-nodes">
+          <div class="arch-node an-blue"><span class="an-icon">📁</span> File Upload</div>
+          <div class="arch-node an-orange"><span class="an-icon">⚡</span> PySpark</div>
+          <div class="arch-node an-blue"><span class="an-icon">🐼</span> Pandas</div>
+        </div>
+      </div>
+      <div class="arch-connector"><div class="arch-connector-dots"><div class="arch-connector-dot"></div><div class="arch-connector-dot"></div><div class="arch-connector-dot"></div></div></div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">Processing</div>
+        <div class="arch-nodes">
+          <div class="arch-node an-green"><span class="an-icon">✅</span> Great Expectations</div>
+          <div class="arch-node an-purple"><span class="an-icon">🔧</span> dbt Core</div>
+          <div class="arch-node an-gold"><span class="an-icon">🤖</span> AI Analysis</div>
+          <div class="arch-node an-blue"><span class="an-icon">🔬</span> Profiler</div>
+        </div>
+      </div>
+      <div class="arch-connector"><div class="arch-connector-dots"><div class="arch-connector-dot"></div><div class="arch-connector-dot"></div><div class="arch-connector-dot"></div></div></div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">Orchestration</div>
+        <div class="arch-nodes">
+          <div class="arch-node an-cyan"><span class="an-icon">🌀</span> Apache Airflow</div>
+          <div class="arch-node an-cyan"><span class="an-icon">⏰</span> Scheduler</div>
+          <div class="arch-node an-green"><span class="an-icon">📧</span> Notifications</div>
+        </div>
+      </div>
+      <div class="arch-connector"><div class="arch-connector-dots"><div class="arch-connector-dot"></div><div class="arch-connector-dot"></div><div class="arch-connector-dot"></div></div></div>
+      <div class="arch-layer">
+        <div class="arch-layer-label">Output</div>
+        <div class="arch-nodes">
+          <div class="arch-node an-green"><span class="an-icon">📊</span> CSV Export</div>
+          <div class="arch-node an-orange"><span class="an-icon">📦</span> Parquet</div>
+          <div class="arch-node an-purple"><span class="an-icon">🔧</span> dbt Models</div>
+          <div class="arch-node an-blue"><span class="an-icon">📋</span> Reports</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta">
+  <div class="cta-inner reveal">
+    <h2>Ready to Transform Your Data?</h2>
+    <p>Start building production-ready ETL pipelines in minutes.<br>No credit card required. Open source and free to use.</p>
+    <div class="cta-actions">
+      <a href="/app?fresh=1" class="btn-hero primary">Get Started Free →</a>
+      <a href="https://github.com" class="btn-hero secondary" target="_blank">⭐ Star on GitHub</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">
+        <div class="footer-brand-icon"><svg viewBox="0 0 20 20" fill="none" width="14" height="14"><path d="M3 4h14M3 10h14M3 16h14" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="7" cy="4" r="2" fill="#00e5a0"/><circle cx="13" cy="10" r="2" fill="#4f8eff"/><circle cx="9" cy="16" r="2" fill="#ff9442"/></svg></div>
+        <span class="footer-brand-name">Data<em>Forge</em> ETL</span>
+      </div>
+      <div class="footer-desc">Enterprise-grade data engineering platform for modern data teams. Built with Python and love.</div>
+      <div class="footer-badges">
+        <span class="footer-badge">PySpark</span>
+        <span class="footer-badge">GE</span>
+        <span class="footer-badge">dbt</span>
+        <span class="footer-badge">Airflow</span>
+        <span class="footer-badge">AI</span>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="#architecture">Architecture</a>
+      <a href="/app?fresh=1">Dashboard</a>
+    </div>
+    <div class="footer-col">
+      <h4>Resources</h4>
+      <a href="#">Documentation</a>
+      <a href="#">API Reference</a>
+      <a href="#">Pipeline Templates</a>
+      <a href="#">Changelog</a>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <a href="#">GitHub</a>
+      <a href="#">Community</a>
+      <a href="#">Support</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 DataForge ETL. All rights reserved.</span>
+    <span>Built with Flask · Python · Open Source</span>
+  </div>
+</footer>
+
+<script>
+/* ═══ SCROLL REVEAL ═══ */
+const reveals=document.querySelectorAll('.reveal');
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);}});
+},{threshold:0.15,rootMargin:'0px 0px -40px 0px'});
+reveals.forEach(el=>observer.observe(el));
+
+/* ═══ STAT COUNTER ═══ */
+const statNums=document.querySelectorAll('.stat-number[data-target]');
+const statObserver=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const el=e.target;
+      const target=parseInt(el.dataset.target);
+      const suffix=el.dataset.suffix||'';
+      let current=0;
+      const step=Math.max(1,Math.floor(target/40));
+      const timer=setInterval(()=>{
+        current+=step;
+        if(current>=target){current=target;clearInterval(timer);}
+        el.textContent=current+suffix;
+      },35);
+      statObserver.unobserve(el);
+    }
+  });
+},{threshold:0.5});
+statNums.forEach(el=>statObserver.observe(el));
+
+/* ═══ NAV SHRINK ═══ */
+let lastScroll=0;
+window.addEventListener('scroll',()=>{
+  const nav=document.getElementById('navbar');
+  if(window.scrollY>80)nav.style.background='rgba(6,10,16,.95)';
+  else nav.style.background='rgba(6,10,16,.85)';
+  lastScroll=window.scrollY;
+},{passive:true});
+
+/* ═══ SMOOTH SCROLL ═══ */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    const target=document.querySelector(a.getAttribute('href'));
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+    document.getElementById('navLinks').classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>

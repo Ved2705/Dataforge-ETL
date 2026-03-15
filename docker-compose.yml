@@ -1,0 +1,180 @@
+version: "3.9"
+
+# ── Shared Airflow config ─────────────────────────────────────────────────────
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.8.1
+  environment: &airflow-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: ""
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+    _PIP_ADDITIONAL_REQUIREMENTS: "pandas scipy scikit-learn great-expectations dbt-postgres"
+  volumes:
+    - ./backend/airflow_dags:/opt/airflow/dags
+    - ./data/raw:/opt/airflow/data/raw
+    - ./data/processed:/opt/airflow/data/processed
+    - airflow-logs:/opt/airflow/logs
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+# ── Services ──────────────────────────────────────────────────────────────────
+services:
+
+  # ── Postgres ──
+  postgres:
+    image: postgres:15
+    container_name: dataforge_postgres
+    environment:
+      POSTGRES_USER: dataforge
+      POSTGRES_PASSWORD: dataforge
+      POSTGRES_DB: dataforge
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/init-multi-db.sh:/docker-entrypoint-initdb.d/init.sh
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U dataforge && psql -U dataforge -c '\\l' | grep -q airflow" ]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+
+  # ── Redis ──
+  redis:
+    image: redis:7
+    container_name: dataforge_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # ── Flask Backend ──
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: dataforge_backend
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://dataforge:dataforge@postgres:5432/dataforge
+      AIRFLOW_API_URL: http://airflow-webserver:8080/api/v1
+      AIRFLOW_USER: admin
+      AIRFLOW_PASSWORD: admin
+      SECRET_KEY: change-me-in-production
+      UPLOAD_FOLDER: /app/data/raw
+      OUTPUT_FOLDER: /app/data/processed
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    volumes:
+      - ./data/raw:/app/data/raw
+      - ./data/processed:/app/data/processed
+      - ./dbt_project:/app/dbt_project
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Airflow Init ──
+  airflow-init:
+    <<: *airflow-common
+    container_name: dataforge_airflow_init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        echo "Waiting for airflow database to be ready..."
+        python -c "
+        import psycopg2, sys, time
+        for i in range(40):
+            try:
+                conn = psycopg2.connect(host='postgres', dbname='airflow', user='airflow', password='airflow', connect_timeout=3)
+                conn.close()
+                print('DB is ready!')
+                sys.exit(0)
+            except Exception as e:
+                print(f'Attempt {i+1}/40: {e}')
+                time.sleep(4)
+        print('ERROR: DB never became ready.')
+        sys.exit(1)
+        "
+
+        echo "Initialising Airflow schema..."
+        airflow db init
+
+        echo "Creating admin user..."
+        airflow users create \
+          --username admin \
+          --password admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@dataforge.io || echo "Admin user already exists, continuing."
+
+        echo "Airflow init complete."
+    restart: "no"
+
+  # ── Airflow Webserver ──
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: dataforge_airflow_web
+    command: webserver
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ── Airflow Scheduler ──
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: dataforge_airflow_scheduler
+    command: scheduler
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ── Spark Master ──
+  spark-master:
+    image: apache/spark:3.5.1
+    container_name: dataforge_spark_master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    environment:
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_WEBUI_PORT=8081
+    ports:
+      - "8081:8081"
+      - "7077:7077"
+    restart: unless-stopped
+
+  # ── Spark Worker ──
+  spark-worker:
+    image: apache/spark:3.5.1
+    container_name: dataforge_spark_worker
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    environment:
+      - SPARK_WORKER_MEMORY=2g
+      - SPARK_WORKER_CORES=2
+      - SPARK_WORKER_WEBUI_PORT=8082
+    ports:
+      - "8082:8082"
+    depends_on:
+      - spark-master
+    restart: unless-stopped
+
+# ── Volumes ───────────────────────────────────────────────────────────────────
+volumes:
+  postgres-data:
+  airflow-logs:

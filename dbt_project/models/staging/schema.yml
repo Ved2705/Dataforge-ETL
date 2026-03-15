@@ -1,0 +1,17 @@
+version: 2
+sources:
+  - name: raw
+    schema: public
+    tables:
+      - name: uploaded_dataset
+
+models:
+  - name: stg_dataset
+    description: "Staged and cleaned dataset"
+    columns:
+      - name: record_id
+        tests: [not_null, unique]
+      - name: name
+        tests: [not_null]
+      - name: value
+        tests: [not_null]

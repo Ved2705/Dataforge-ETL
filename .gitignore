@@ -1,0 +1,48 @@
+# Environment variables - NEVER commit these
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+venv/
+env/
+
+# Data files - don't upload user data to GitHub
+data/raw/*
+data/processed/*
+data/uploads/*
+data/outputs/*
+# Keep the folder structure
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Database files
+*.db
+*.sqlite3
+
+# dbt artifacts
+dbt_project/target/
+dbt_project/logs/
+dbt_project/.user.yml
+
+# Docker
+docker-compose.override.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Airflow logs
+airflow/logs/
+
+# Logs
+*.log
