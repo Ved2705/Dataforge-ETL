@@ -4726,7 +4726,7 @@
     let joinMappings = [], joinType = 'inner', joinDragCol = null;
 
     async function joinInit() {
-      const ds = await apiFetch('/api/datasets/') || [];
+      const ds = await apiFetch('/api/datasets') || [];
       const opts = ds.map(d => `<option value="${d.id}">${d.original_name || d.name} (${(d.row_count || 0).toLocaleString()} rows)</option>`).join('');
       document.getElementById('joinLeftDs').innerHTML = '<option value="">— pick dataset —</option>' + opts;
       document.getElementById('joinRightDs').innerHTML = '<option value="">— pick dataset —</option>' + opts;
@@ -5657,7 +5657,7 @@
     function submitAuth() { }
 
     /* HELPERS */
-    async function apiFetch(url) { try { const r = await fetch(url); return r.ok ? r.json() : null; } catch { return null; } }
+    async function apiFetch(url) { try { const r = await fetch(url); return r.json(); } catch { return null; } }
     function setStatus(state, text) { document.getElementById('statusDot').className = 'dot ' + state; document.getElementById('statusText').textContent = text; }
     async function updateRunCountBadge() {
       const d = await apiFetch('/api/history/stats');
