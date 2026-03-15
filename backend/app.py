@@ -74,10 +74,6 @@ app.register_blueprint(dq_rules_bp,    url_prefix="/api/dq-rules")
 app.register_blueprint(dataset_bp, url_prefix="/api/datasets")
 
 
-# ─── DB init ─────────────────────────────────────────
-with app.app_context():
-    db.create_all()
-
 # ═════════════════════════════════════════════════════
 # FRONTEND
 # ═════════════════════════════════════════════════════
